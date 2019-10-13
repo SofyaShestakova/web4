@@ -1,0 +1,88 @@
+footer {
+    left: 0; bottom: 0;
+    margin: 1% auto;
+    text-align: center;
+    width:100%;
+    background-color: rgba(81, 77, 77, 0.83);
+}
+
+header {
+    text-align: center;
+    border: 2px solid wheat;
+    width: 100%;
+    color: #5790e2;
+    /*margin: 0% auto;*/
+    margin: 2%;
+}
+
+canvas {
+    background: #fcf8ff;
+    border: 0.2em solid #686378;
+    border-radius: 10px;
+}
+
+table {
+    width: 90%;
+    margin: 10% auto;
+    table-layout: auto;
+    column-width: fill-available;
+    overflow: auto;
+    max-height: 40px;
+}
+
+table,
+td,
+th {
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 10px;
+    text-align: center;
+    border: 2px solid #875c56;
+    word-wrap: break-word;
+    width:25%;
+}
+
+
+a {
+    color: #5ca8bd;
+    text-align:center;
+    display:block;
+}
+
+a:visited {
+    color: #c58fde;
+}
+
+legend {
+    color: #5790e2;
+    padding: 3% 3%;
+    font-size: 1.2em;
+}
+
+select, #y_input{
+    width: 100%;
+    background-color: #f9e9bd;
+    border: 2px solid #794234;
+}
+
+
+.ui-spinner {
+    width: 100%;
+}
+
+.ui-spinner-button {
+    background-color: #7d5738 !important;
+
+}
+.ui-message-info,.ui-message-error,.ui-message-warn,.ui-message-fatal {
+    color: #941014 !important;
+    border: 0.1em solid #a70f14 !important; /*27153f*/
+    background-color: #f7dc8b !important;
+    width: fit-content !important;
+    padding:0.3em !important;
+    font-size: 0.8em !important;
+    margin: 0;
+}

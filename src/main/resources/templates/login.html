@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script th:inline="javascript">const magic_data = [[${magic_data}]];</script>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/elems.css">
+    <link rel="stylesheet" href="/css/login.css">
+    <link rel="icon" href="/img/duck.png">
+    <title>Login</title>
+</head>
+<body>
+<div id="app">
+    <app-login></app-login>
+</div>
+
+<template id="login-template">
+    <div class="border main">
+        <form class="login" action="/login" method="POST">
+            <br/>
+            <br/>
+            <label for="username">
+                <span class="login-span">nic: </span>
+                <input type="text" class="text" id="username" name="username"/>
+            </label>
+            <br/>
+            <br/>
+            <label for="password">
+                <span class="login-span">password:</span>
+                <input type="password" class="text" id="password" name="password"/>
+            </label>
+<!--                       <span v-if="error!==0">{{error}}</span>-->
+            <br/>
+            <input type="submit" value="Войти"/>
+        </form>
+    </div>
+</template>
+<script>
+    Vue.component('app-login', {
+        template: '#login-template'
+    });
+    let app = new Vue({
+        el: '#app',
+        // data: {
+        //     error: magic_data.error
+        // }
+
+    });
+</script>
+
+</body>
+</html>

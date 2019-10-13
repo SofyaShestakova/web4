@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+    <script th:inline="javascript">const magic_data = [[${magic_data}]];</script>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/elems.css">
+    <link rel="icon" href="/img/duck.png">
+</head>
+<body>
+<div id="app">
+    <app-header></app-header>
+    <app-form :results="results"></app-form>
+    <app-footer></app-footer>
+</div>
+
+<template id="header-template">
+    <div class="block" id="names">
+        <h3>Лабораторная работа № 4</h3> <br/> <span class="left_meta"> Вариант: 20270 </span>
+        <span class="right_meta"> Выполнили: Шестакова Софья и</span> <br/>
+        <span class="right_meta"> Хуснутдинова Карина </span> <br/>
+        <span class="left_meta"> Группа: P3202/P3212</span>
+    </div>
+</template>
+
+
+<template id="footer-template">
+    <div class="block">
+        <footer class="block">
+            <p>
+                <a href="http://en.ifmo.ru/en/">
+                    <img src="/img/itmo.png" width="120" height="60" border="0"/>
+                </a>
+            </p>
+        </footer>
+    </div>
+</template>
+
+<template id="form-template">
+    <div id="container">
+        <div id="logout_area">
+            <form class="block" method="post" action="/logout">
+                <input type="submit" value="Выйти" />
+            </form></div>
+        <div id="canvas_area">
+            <canvas id="canvas" width=window.innerWidth/1.7 height=window.innerHeight/1.7 @click="eventCanvas">
+                Sorry, canvas not supported
+            </canvas>
+        </div>
+        <div id="form_area" class="block">
+            <form id="main_form" name="main_form" @submit.prevent="validate">
+                <fieldset class="param_field">
+                    <legend>Х</legend>
+                        <input type="text" id="x_input" class="text" name="x_input" required = "true"
+                               maxlength="10"
+                               v-model="x"
+                               @click="errorMessageX=''"/>
+                    <span class="invalid_input_message">{{errorMessageX}}</span>
+                    </select>
+                </fieldset>
+                <fieldset class="param_field">
+                    <legend>Y</legend>
+                    <input type="text" id="y_input" class="text" name="y_input" placeholder="Y є (-5; 5)"
+                           maxlength="10"
+                           v-model="y"
+                           @click="errorMessageY=''"
+                    />
+                    <span class="invalid_input_message">{{errorMessageY}}</span>
+                </fieldset>
+                <fieldset class="param_field">
+                    <legend>R</legend>
+                    <input type="text" id="r_input" class="text" name="r_input"
+                           maxlength="10"
+                           v-model="r"
+                           @click="errorMessageR=''"/>
+                    <span class="invalid_input_message">{{errorMessageR}}</span>
+                </fieldset>
+                <input type="submit" id="submitButton" value="Проверить" />
+            </form>
+        </div>
+
+
+        <div id="table_area" style="overflow-y:auto;">
+            <table id="history_table">
+                <tr>
+                    <th>Координата X</th>
+                    <th>Координата Y</th>
+                    <th>Радиус</th>
+                    <th>Результат</th>
+                </tr>
+                <tr v-for="result in showResults">
+                    <td class="x_coord">
+                        {{result.x}}
+                    </td>
+                    <td class="y_coord">
+                        {{result.y}}
+                    </td>
+                    <td>
+                        {{result.r}}
+                    </td>
+                    <td class="result">
+                        {{result.isInArea == true ? "попал" : "не попал"}}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</template>
+
+<script>
+    let R = 1;
+    const api = Vue.resource('/result');
+    Vue.component('app-header', {
+        template: '#header-template'
+    });
+
+    Vue.component('app-footer', {
+        template: '#footer-template'
+    });
+    Vue.component('app-form', {
+        props: ['results'],
+        template: '#form-template',
+        data: function () {
+            return {
+                x: 0,
+                y: 0,
+                r: 2,
+                errorMessageR: '',
+                errorMessageY: '',
+                errorMessageX:'',
+                updateCanvas: false,
+                windowWidth: window.innerWidth,
+                cc:0.5
+            }
+        },
+        methods: {
+            validate: function () {
+                let yValue = this.y;
+                let xValue = this.x;
+                let rValue = this.r;
+                const min_y = -5;
+                const max_y = 5;
+                const max_x = 5;
+                const min_x = -3;
+                const max_r = 5;
+                const min_r = -3;
+                if (this.r < 0) this.errorMessageR = 'Упс! У вас тут  r <' + 0;
+                else this.errorMessageR = '';
+                if (yValue === '') {
+                    this.errorMessageY = 'Введите y';
+                } else if (isNaN(Number(yValue))) {
+                    this.errorMessageY = 'Это не число';
+                } else if (yValue >= max_y || yValue <= min_y) {
+                    this.errorMessageY = ' ' + yValue + ' \u{2209} (' + min_y + ' ; ' + max_y
+                        + ') !';
+                } else if (xValue === '') {
+                    this.errorMessageX = 'Введите x';
+                } else if (isNaN(Number(xValue))) {
+                    this.errorMessageX = 'Это не число';
+                } else if (xValue >= max_x || xValue <= min_x) {
+                    this.errorMessageX = ' ' + xValue + ' \u{2209} (' + min_x + ' ; ' + max_x
+                        + ') !';
+                } else if (rValue === '') {
+                    this.errorMessageR = 'Введите r';
+                } else if (isNaN(Number(rValue))) {
+                    this.errorMessageR = 'Это не число';
+                } else if (rValue >= max_r || rValue <= min_r) {
+                    this.errorMessageR = ' ' + rValue + ' \u{2209} (' + min_r + ' ; ' + mar_x
+                        + ') !'
+                } else {
+                    this.errorMessageY = '';
+                    this.errorMessageR = '';
+                    this.errorMessageX = '';
+
+                }
+                if (this.errorMessageR ==='' && this.errorMessageX===''&& this.errorMessageY==='')this.check();
+            },
+
+            check: function () {
+                    let result = {
+                        x: +Number(this.x).toFixed(3),
+                        y: +Number(this.y).toFixed(3),
+                        r: +Number(this.r).toFixed(3),
+                        isInArea: true
+                    };
+                    api.save({}, result).then(response =>
+                        response.json().then(result => {
+                            this.results.push(result);
+                        })
+                    )
+
+            },
+            eventCanvas: function (e) {
+                let canvas = document.getElementById("canvas");
+                let ctx = canvas.getContext("2d");
+                let w = canvas.width;
+                let h = canvas.height;
+                let r = this.r;
+                R = this.r;
+                let coo = this.getMouseCoords(e);
+                let x = coo.x;
+                let y = coo.y;
+                if (r < 0) {
+                    this.redraw();
+                    ctx.fillStyle = "red";
+                    ctx.textAlign = "center";
+                    ctx.fillText("Что-то пошло не так", w / 4, h / 4);
+                    ctx.fill();
+
+                } else if(x>=-3 && x<=5 && y> -5 && y<=5 && r>=0 && r<=5){
+                    this.redraw();
+                    this.x = x;
+                    this.y = y;
+                    this.check();
+
+                }},
+            draw_plot: function () {
+                let canvas = document.getElementById('canvas');
+                // canvas.width = window.innerWidth * this.cc;
+                // canvas.height = window.innerWidth * this.cc;
+                this.fill_areas();
+                this.draw_axises();
+                this.draw_points();
+            },
+            draw_axises: function () {
+                let canvas = document.getElementById('canvas');
+                let ctx = canvas.getContext('2d');
+                let w = canvas.width;
+                let h = canvas.height;
+                let tickStep = w / 12;
+                let tickCoo = tickStep;
+                let space = tickStep / 2;
+                ctx.strokeStyle = "#585957";
+                ctx.fillStyle = "#585957";
+                ctx.lineWidth = 1.2;
+
+                // x
+                ctx.moveTo(w - space, h / 2);
+                ctx.lineTo(space, h / 2);
+                ctx.moveTo(w - space, h / 2);
+                ctx.lineTo(w - space * 1.2, h / 2 - space / 5);
+                ctx.moveTo(w - space, h / 2);
+                ctx.lineTo(w - space * 1.2, h / 2 + space / 5);
+
+                //y
+                ctx.moveTo(w / 2, space);
+                ctx.lineTo(w / 2, h - space);
+                ctx.moveTo(w / 2, space);
+                ctx.lineTo(w / 2 + space / 5, space * 1.2);
+                ctx.moveTo(w / 2, space);
+                ctx.lineTo(w / 2 - space / 5, space * 1.2);
+                ctx.stroke();
+
+                // ticks and marks
+                let tickSize = 8;
+                ctx.font = "11px";
+                for (let i = -5; i < 6; i++) {
+                    if (i === 0) {
+                        ctx.fillText(i + "", tickCoo + tickSize, h / 2 + tickSize * 2);
+                        tickCoo += tickStep;
+                    } else {
+                        ctx.fillRect(tickCoo, h / 2 - tickSize / 2, 0.5, tickSize);
+                        ctx.fillText(i + "", tickCoo - 1, h / 2 + tickSize * 2);
+
+                        ctx.fillRect(h / 2 - tickSize / 2, tickCoo, tickSize, 0.5);
+                        ctx.fillText(i * (-1) + " ", w / 2 - tickSize * 2, tickCoo + 5);
+                        tickCoo += tickStep;
+                    }
+
+                }
+            },
+            draw_points: function () {
+                let canvas = document.getElementById('canvas');
+                let ctx = canvas.getContext('2d');
+                let w = canvas.width;
+                let h = canvas.height;
+                let tickStep = w / 12;
+                let results = this.results.slice();
+                for (let i = 0; i < results.length; i++) {
+                    let result = results[i];
+                    if (result.r === R) {
+                      let x = result.x;
+                      let y = result.y;
+                      let res = result.isInArea;
+                      if (res === true)
+                        ctx.fillStyle = "#1906cd";
+                      else
+                        ctx.fillStyle = "#050200";
+                      ctx.beginPath();
+                      let x_on_canvas = this.get_pos_on_canvas(x, w);
+                      let y_on_canvas = this.get_pos_on_canvas(y * (-1), h);
+                      ctx.moveTo(x_on_canvas, y_on_canvas);
+                      ctx.arc(x_on_canvas, y_on_canvas, 2.5, Math.PI * 2, 0);
+                      ctx.fill();
+                    }
+                }
+            },
+            get_pos_on_canvas: function (coo, par) {
+                return (6 + coo) * par / 12;
+            },
+            fill_areas: function () {
+                let canvas = document.getElementById('canvas');
+                let ctx = canvas.getContext('2d');
+                let w = canvas.width;
+                let h = canvas.height;
+                let tickStep = w / 12;
+                let r = this.r;
+                if (r < 0) r = 0;
+
+                ctx.fillStyle = "#9887e2";
+                r *= tickStep;
+
+                // quarter circle
+                ctx.moveTo(w / 2, h / 2);
+                ctx.arc(w / 2, h / 2, r, Math.PI , 1.5*Math.PI);
+                ctx.fill();
+
+                // triangle
+                // without this it keeps drawing border
+                ctx.moveTo(w / 2 - r / 2, h / 2);
+                ctx.lineTo(w / 2, h / 2);
+                ctx.lineTo(w / 2, h / 2 + r/2);
+                ctx.fill();
+                ctx.beginPath();
+
+                // rectangle
+                ctx.fillRect(w / 2 , h / 2 , r, r/2);
+                ctx.closePath();
+
+            },
+            redraw: function () {
+                let canvas = document.getElementById('canvas');
+                let ctx = canvas.getContext('2d');
+                let foo = window.innerWidth;
+                if (foo > window.innerHeight) foo = window.innerHeight;
+                canvas.width = foo / 1.7;
+                canvas.height = foo / 1.7;
+                let w = canvas.width;
+                let h = canvas.height;
+                let tickStep = w / 12;
+                canvas.width = 1;
+                canvas.width = w;
+                this.draw_plot();
+            },
+            getMouseCoords: function (e) {
+                let canvas = document.getElementById('canvas');
+                let ctx = canvas.getContext('2d');
+                let w = canvas.width;
+                let h = canvas.height;
+                let tickStep = w / 12;
+                let rect = canvas.getBoundingClientRect();
+                return {
+                    x: 6 - (w - (e.clientX - rect.left)) * 12 / w,
+                    y: (6 - (h - (e.clientY - rect.top)) * 12 / h) * (-1)
+                };
+            }
+        },
+        computed: {
+            showResults: function () {
+                this.updateCanvas = !this.updateCanvas;
+                return this.results.slice().reverse()
+            }
+        },
+        watch:{
+            updateCanvas:function () {
+                this.redraw();
+            }
+        },
+        mounted() {
+            window.onresize = () => {
+                // this.windowWidth = window.innerWidth;
+                // if (window.innerWidth > 889) {
+                //     this.cc = 0.1
+                // } else {
+                //     this.cc = 0.5
+                // }
+                this.redraw();
+            }
+        }
+    });
+
+    let app = new Vue({
+        el: '#app',
+        data: {
+            // username: magic_data.username,
+            results: magic_data.results
+        },
+
+    });
+
+</script>
+</body>
+
+</html>

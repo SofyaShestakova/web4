@@ -1,0 +1,11 @@
+.login {
+    color: #607ee2;
+    font-weight: bold;
+    border: #874a3a solid 4px;
+    border-radius: 10px;
+    width: fit-content;
+    background-color: #f5e7c5;
+    padding: 2%;
+    margin-left: 40%;
+    margin-top: 10%;
+}

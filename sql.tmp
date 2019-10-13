@@ -1,0 +1,26 @@
+create table spring_user(
+  username varchar(100) primary key,
+  password varchar(100) not null
+);
+
+create table spring_check(
+  check_id serial primary key,
+  x real not null,
+  y real not null,
+  r real not null,
+  shooter varchar(100) not null,
+  is_in_area boolean not null
+);
+
+
+-- utils --
+
+drop table spring_user;
+drop table spring_check;
+
+insert into spring_check (x, y, r, shooter, is_in_area) values (1, 2, 0.5, 'hashed', true);
+insert into spring_user (username, password) values ('a', 'b');
+
+
+select * from spring_check;
+select * from spring_user;

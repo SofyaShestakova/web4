@@ -1,0 +1,13 @@
+#clock{
+    font-size: 3em;
+    font-family: cursive;
+    color: #3f151e; /* 241942*/
+    font-weight: bold;
+    padding: 0.5em;
+    width: fit-content;
+    background-color: wheat;
+    border: 0.12em solid #5a3136; /*27153f*/
+    border-radius: 20px;
+    text-align: center;
+    margin: 10% auto 5%;
+}
