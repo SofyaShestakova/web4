@@ -55,10 +55,10 @@
             <form id="main_form" name="main_form" @submit.prevent="validate">
                 <fieldset class="param_field">
                     <legend>Х</legend>
-                        <input type="text" id="x_input" class="text" name="x_input" required = "true"
-                               maxlength="10"
-                               v-model="x"
-                               @click="errorMessageX=''"/>
+                    <input type="text" id="x_input" class="text" name="x_input" required = "true"
+                           maxlength="10"
+                           v-model="x"
+                           @click="errorMessageX=''"/>
                     <span class="invalid_input_message">{{errorMessageX}}</span>
                     </select>
                 </fieldset>
@@ -76,6 +76,7 @@
                     <input type="text" id="r_input" class="text" name="r_input"
                            maxlength="10"
                            v-model="r"
+                           @change="changeR"
                            @click="errorMessageR=''"/>
                     <span class="invalid_input_message">{{errorMessageR}}</span>
                 </fieldset>
@@ -112,7 +113,7 @@
 </template>
 
 <script>
-    let R = 1;
+    let R = 2;
     const api = Vue.resource('/result');
     Vue.component('app-header', {
         template: '#header-template'
@@ -169,7 +170,7 @@
                 } else if (isNaN(Number(rValue))) {
                     this.errorMessageR = 'Это не число';
                 } else if (rValue >= max_r || rValue <= min_r) {
-                    this.errorMessageR = ' ' + rValue + ' \u{2209} (' + min_r + ' ; ' + mar_x
+                    this.errorMessageR = ' ' + rValue + ' \u{2209} (' + min_r + ' ; ' + max_r
                         + ') !'
                 } else {
                     this.errorMessageY = '';
@@ -177,21 +178,24 @@
                     this.errorMessageX = '';
 
                 }
-                if (this.errorMessageR ==='' && this.errorMessageX===''&& this.errorMessageY==='')this.check();
+                if (this.errorMessageR ==='' && this.errorMessageX===''&& this.errorMessageY==='') {
+                    R = rValue;
+                    this.check();
+                }
             },
 
             check: function () {
-                    let result = {
-                        x: +Number(this.x).toFixed(3),
-                        y: +Number(this.y).toFixed(3),
-                        r: +Number(this.r).toFixed(3),
-                        isInArea: true
-                    };
-                    api.save({}, result).then(response =>
-                        response.json().then(result => {
-                            this.results.push(result);
-                        })
-                    )
+                let result = {
+                    x: +Number(this.x).toFixed(3),
+                    y: +Number(this.y).toFixed(3),
+                    r: +Number(this.r).toFixed(3),
+                    isInArea: true
+                };
+                api.save({}, result).then(response =>
+                response.json().then(result => {
+                    this.results.push(result);
+            })
+            )
 
             },
             eventCanvas: function (e) {
@@ -282,20 +286,20 @@
                 let results = this.results.slice();
                 for (let i = 0; i < results.length; i++) {
                     let result = results[i];
-                    if (result.r === R) {
-                      let x = result.x;
-                      let y = result.y;
-                      let res = result.isInArea;
-                      if (res === true)
-                        ctx.fillStyle = "#1906cd";
-                      else
-                        ctx.fillStyle = "#050200";
-                      ctx.beginPath();
-                      let x_on_canvas = this.get_pos_on_canvas(x, w);
-                      let y_on_canvas = this.get_pos_on_canvas(y * (-1), h);
-                      ctx.moveTo(x_on_canvas, y_on_canvas);
-                      ctx.arc(x_on_canvas, y_on_canvas, 2.5, Math.PI * 2, 0);
-                      ctx.fill();
+                    if (result.r == R) {
+                        let x = result.x;
+                        let y = result.y;
+                        let res = result.isInArea;
+                        if (res === true)
+                            ctx.fillStyle = "#1906cd";
+                        else
+                            ctx.fillStyle = "#050200";
+                        ctx.beginPath();
+                        let x_on_canvas = this.get_pos_on_canvas(x, w);
+                        let y_on_canvas = this.get_pos_on_canvas(y * (-1), h);
+                        ctx.moveTo(x_on_canvas, y_on_canvas);
+                        ctx.arc(x_on_canvas, y_on_canvas, 2.5, Math.PI * 2, 0);
+                        ctx.fill();
                     }
                 }
             },
@@ -331,6 +335,27 @@
                 ctx.fillRect(w / 2 , h / 2 , r, r/2);
                 ctx.closePath();
 
+            },
+            changeR: function() {
+                let rValue = this.r;
+                const max_r = 5;
+                const min_r = -3;
+                if (this.r < 0) this.errorMessageR = 'Упс! У вас тут  r <' + 0;
+                else this.errorMessageR = '';
+                if (rValue === '') {
+                    this.errorMessageR = 'Введите r';
+                } else if (isNaN(Number(rValue))) {
+                    this.errorMessageR = 'Это не число';
+                } else if (rValue >= max_r || rValue <= min_r) {
+                    this.errorMessageR = ' ' + rValue + ' \u{2209} (' + min_r + ' ; ' + max_r
+                        + ') !'
+                } else {
+                    this.errorMessageR = '';
+                }
+                if (this.errorMessageR ==='') {
+                    R = rValue;
+                    this.redraw();
+                }
             },
             redraw: function () {
                 let canvas = document.getElementById('canvas');
